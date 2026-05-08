@@ -136,12 +136,28 @@ const TickChart = () => {
         ? points.slice(points.length - maxVisiblePoints)
         : points;
 
-    const getX = (idx: number) => padX + idx * PIXELS_PER_TICK;
+    const diagStartY = padTop + drawHeight * 0.82;
+    const diagEndY = padTop + drawHeight * 0.22;
+    const minValue = visiblePoints.reduce(
+      (min, value) => Math.min(min, value),
+      visiblePoints[0],
+    );
+    const valueRange = Math.max(0.0001, maxY - minValue);
 
-    const getY = (value: number) => {
-      const ratio = (value - 1) / Math.max(0.0001, maxY - 1);
-      return padTop + drawHeight - ratio * drawHeight;
-    };
+    // Fixed pixel step per tick — curve grows left→right without rescaling
+    const chartPoints = visiblePoints.map((value, idx) => {
+      const x = padX + idx * PIXELS_PER_TICK;
+      // Diagonal position based on how far along the full visible window this tick is
+      const tDiag = maxVisiblePoints <= 1 ? 0 : idx / (maxVisiblePoints - 1);
+      const diagonalY = diagStartY + tDiag * (diagEndY - diagStartY);
+      const normalized = (value - minValue) / valueRange;
+      const lift = normalized * drawHeight * 0.14;
+      const y = Math.max(
+        padTop,
+        Math.min(padTop + drawHeight, diagonalY - lift),
+      );
+      return { x, y };
+    });
 
     const lineGrad = ctx.createLinearGradient(
       0,
@@ -173,17 +189,16 @@ const TickChart = () => {
       isCrashed ? "rgba(255,78,96,0.00)" : "rgba(5,223,114,0.00)",
     );
 
-    const firstX = getX(0);
-    const lastX = getX(visiblePoints.length - 1);
-    const lastY = getY(visiblePoints[visiblePoints.length - 1]);
+    const firstX = chartPoints[0].x;
+    const lastX = chartPoints[chartPoints.length - 1].x;
+    const lastY = chartPoints[chartPoints.length - 1].y;
 
     ctx.fillStyle = areaGrad;
     ctx.beginPath();
-    for (let i = 0; i < visiblePoints.length; i += 1) {
-      const x = getX(i);
-      const y = getY(visiblePoints[i]);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    for (let i = 0; i < chartPoints.length; i += 1) {
+      const point = chartPoints[i];
+      if (i === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
     }
     ctx.lineTo(lastX, padTop + drawHeight);
     ctx.lineTo(firstX, padTop + drawHeight);
@@ -198,11 +213,10 @@ const TickChart = () => {
     ctx.lineCap = "round";
 
     ctx.beginPath();
-    for (let i = 0; i < visiblePoints.length; i += 1) {
-      const x = getX(i);
-      const y = getY(visiblePoints[i]);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    for (let i = 0; i < chartPoints.length; i += 1) {
+      const point = chartPoints[i];
+      if (i === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
     }
     ctx.stroke();
 
@@ -212,11 +226,10 @@ const TickChart = () => {
     ctx.lineCap = "round";
 
     ctx.beginPath();
-    for (let i = 0; i < visiblePoints.length; i += 1) {
-      const x = getX(i);
-      const y = getY(visiblePoints[i]);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    for (let i = 0; i < chartPoints.length; i += 1) {
+      const point = chartPoints[i];
+      if (i === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
     }
     ctx.stroke();
 
