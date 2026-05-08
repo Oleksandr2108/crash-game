@@ -9,6 +9,15 @@
   --border: #1a1f2e;
   --colorBg: #0e1119;
   --colorBgInput: #111620;
+  --errorBg: rgba(70, 8, 9, 0.4);
+  --errorBorder: #82181a;
+  --errorText: #ff6467;
+  --midBg: rgba(70, 25, 1, 0.4);
+  --midBorder: #7b3306;
+  --midText: #ffb900;
+  --highBg: rgba(3, 46, 21, 0.4);
+  --highBorder: #0d542b;
+  --highText: #05df72;
 }
 
 #root {
@@ -24,7 +33,6 @@
 body {
   margin: 0;
 }
-
 
 input {
   outline: none;

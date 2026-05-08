@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { MyBet, Phase } from "../types/Events";
+import type { RecentResponse, ResentItem } from "../entities/model/types";
 
 export type ConnectionStatus = "connected" | "disconnected" | "error";
 
@@ -9,6 +10,7 @@ interface GameState {
   roundId: string | null;
   autoCashout: number | null;
   connectionStatus: ConnectionStatus;
+  recentRounds: ResentItem[];
 
   phase: Phase;
   multiplier: number;
@@ -16,15 +18,16 @@ interface GameState {
   startedAt: Date | null;
   endsAt: Date | null;
   myBet: MyBet | null;
-  playerCount: number;
+  players: number;
 
+  setRecentRounds: (data: RecentResponse) => void;
   setPhase: (p: Phase) => void;
   setStartedAt: (d: Date | null) => void;
   setEndsAt: (d: Date | null) => void;
   setMultiplier: (m: number) => void;
   setCrashPoint: (n: number | null) => void;
   setMyBet: (b: MyBet | null) => void;
-  setPlayerCount: (n: number) => void;
+  setPlayers: (n: number) => void;
   setBetAmount: (amount: number) => void;
   setRoundId: (id: string) => void;
   halfBet: () => void;
@@ -33,7 +36,6 @@ interface GameState {
   setBalance: (balance: number) => void;
   setAutoCashout: (amount: number | null) => void;
   setConnnectionStatus: (status: ConnectionStatus) => void;
-  // WS event handlers
   onGameStart: () => void;
   onMultiplierUpdate: (multiplier: number) => void;
   onGameCrash: (crashPoint: number) => void;
@@ -51,7 +53,20 @@ export const useGameStore = create<GameState>((set) => ({
   startedAt: null,
   endsAt: null,
   myBet: null,
-  playerCount: 0,
+  players: 0,
+  recentRounds: [],
+
+  setRecentRounds: (data) =>
+    set((state) => {
+      const next = data.rounds;
+      if (
+        state.recentRounds.length === next.length &&
+        state.recentRounds.every((r, i) => r.roundId === next[i]?.roundId)
+      ) {
+        return state;
+      }
+      return { recentRounds: next };
+    }),
 
   setRoundId: (id) => set({ roundId: id }),
   setAutoCashout: (amount) => set({ autoCashout: amount }),
@@ -71,5 +86,5 @@ export const useGameStore = create<GameState>((set) => ({
   setMultiplier: (multiplier) => set({ multiplier }),
   setCrashPoint: (crashPoint) => set({ crashPoint }),
   setMyBet: (myBet) => set({ myBet }),
-  setPlayerCount: (playerCount) => set({ playerCount }),
+  setPlayers: (players) => set({ players }),
 }));

@@ -7,7 +7,6 @@ export interface MyBet {
   status: "placed" | "cashedOut" | "lost";
 }
 
-
 export interface RoundStateEvent {
   phase: Phase;
   roundId: string;
@@ -16,7 +15,19 @@ export interface RoundStateEvent {
   currentMultiplier: number;
   crashPoint: number | null;
   yourBet: MyBet | null;
-  playerCount: number;
+  players: number;
+}
+
+export interface RoundStartEvent {
+  roundId: string;
+  startedAt: string;
+  players: number;
+}
+
+export interface RoundWaitingEvent {
+  roundId: string;
+  endsAt: string;
+  players: number;
 }
 
 export interface RoundTickEvent {
@@ -25,12 +36,31 @@ export interface RoundTickEvent {
   elapsedMs: number;
 }
 
-
+export interface RoundCrashEvent {
+  roundId: string;
+  crashPoint: number;
+  tier: "low" | "mid" | "high";
+  players: number;
+}
 
 export interface BetPlacedEvent {
   betId: string;
   roundId: string;
   amount: number;
   autoCashOutAt: number | null;
+  balance: number;
+}
+
+export interface BetCashedOutEvent {
+  betId: string;
+  multiplier: number;
+  winAmount: number;
+  profit: number;
+  balance: number;
+}
+
+export interface BetLostEvent {
+  betId: string;
+  crashPoint: number;
   balance: number;
 }

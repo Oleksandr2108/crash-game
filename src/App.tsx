@@ -1,12 +1,13 @@
 import "./App.css";
-import BetControls from "./components/BetControls/BetControls";
+
 import LoginPage from "./pages/LoginPage";
 import { useAuthStore } from "./stores/useAuthStore";
 import { useSocket } from "./shared/hooks/useSocket";
+import GamePage from "./pages/GamePage";
 
 function GameLayout() {
   useSocket();
-  return <BetControls />;
+  return <GamePage />;
 }
 
 function App() {
