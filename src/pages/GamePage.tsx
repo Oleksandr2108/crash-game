@@ -4,10 +4,17 @@ import TickChart from "../components/TickChart/TickChart";
 
 const GamePage = () => {
   return (
-    <div className="flex gap-4 items-start flex-wrap">
-      <BetControls />
-      <BetHistoryPanel />
-      <TickChart />
+    <div className="flex h-full min-h-0 w-full flex-col gap-4 xl:flex-row xl:items-stretch">
+      <div className="w-full shrink-0 xl:w-65 xl:self-start">
+        <BetControls />
+      </div>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+        <BetHistoryPanel />
+        <TickChart />
+      </div>
+      <div className="w-full shrink-0 xl:w-65 xl:self-start">
+        <BetControls />
+      </div>
     </div>
   );
 };

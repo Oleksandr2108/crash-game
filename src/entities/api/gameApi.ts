@@ -7,7 +7,7 @@ export const gameApi = {
     return response.data;
   },
   async getRecent() {
-    const response = await httpClient.get("/rounds/recent");
+    const response = await httpClient.get("/rounds/recent?limit=10");
     return response.data;
   },
 };

@@ -7,7 +7,11 @@ import GamePage from "./pages/GamePage";
 
 function GameLayout() {
   useSocket();
-  return <GamePage />;
+  return (
+    <div className="h-dvh w-full px-4 py-4 sm:px-6 lg:px-10 overflow-hidden">
+      <GamePage />
+    </div>
+  );
 }
 
 function App() {
