@@ -5,6 +5,10 @@ import { useGameStore } from "../../stores/useGameStore";
 import { queryClient } from "../../app/providers/queryClient";
 import { gameKeys } from "../../entities/queries/gameKeys";
 import type {
+  BetCashedOutEvent,
+  BetLostEvent,
+  BetPlacedEvent,
+  BetRejectedEvent,
   RoundCrashEvent,
   RoundStartEvent,
   RoundStateEvent,
@@ -55,6 +59,8 @@ export function useSocket() {
       g().setStartedAt(null);
       g().setCrashPoint(null);
       g().setMultiplier(1);
+      g().setMyBet(null);
+      g().setBetActionInFlight(false);
       g().setPlayers(e.players);
     };
 
@@ -70,6 +76,34 @@ export function useSocket() {
       void queryClient.invalidateQueries({ queryKey: gameKeys.recent() });
     };
 
+    const onBetPlaced = (e: BetPlacedEvent) => {
+      g().setBalance(e.balance);
+      g().setMyBet({
+        betId: e.betId,
+        amount: e.amount,
+        autoCashOutAt: e.autoCashOutAt,
+        status: "placed",
+      });
+      g().setBetActionInFlight(false);
+    };
+
+    const onBetCashedOut = (e: BetCashedOutEvent) => {
+      g().setBalance(e.balance);
+      g().setMyBet(null);
+      g().setBetActionInFlight(false);
+    };
+
+    const onBetLost = (e: BetLostEvent) => {
+      g().setBalance(e.balance);
+      g().setMyBet(null);
+      g().setBetActionInFlight(false);
+    };
+
+    const onBetRejected = (e: BetRejectedEvent) => {
+      g().setBetActionInFlight(false);
+      console.warn("Bet rejected:", e.reason, e.message);
+    };
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
@@ -78,6 +112,10 @@ export function useSocket() {
     socket.on("round:start", onStart);
     socket.on("round:waiting", onWaiting);
     socket.on("round:crash", onCrash);
+    socket.on("bet:placed", onBetPlaced);
+    socket.on("bet:cashedOut", onBetCashedOut);
+    socket.on("bet:lost", onBetLost);
+    socket.on("bet:rejected", onBetRejected);
 
     return () => {
       socket.off("connect", onConnect);
@@ -88,6 +126,10 @@ export function useSocket() {
       socket.off("round:start", onStart);
       socket.off("round:waiting", onWaiting);
       socket.off("round:crash", onCrash);
+      socket.off("bet:placed", onBetPlaced);
+      socket.off("bet:cashedOut", onBetCashedOut);
+      socket.off("bet:lost", onBetLost);
+      socket.off("bet:rejected", onBetRejected);
     };
   }, [apiKey]);
 }

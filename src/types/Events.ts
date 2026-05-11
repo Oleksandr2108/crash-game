@@ -64,3 +64,15 @@ export interface BetLostEvent {
   crashPoint: number;
   balance: number;
 }
+
+export interface BetRejectedEvent {
+  reason:
+    | "betting_closed"
+    | "already_has_bet"
+    | "no_active_bet"
+    | "not_running"
+    | "insufficient_balance"
+    | "invalid_auto_cashout"
+    | "invalid_payload";
+  message: string;
+}
