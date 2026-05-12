@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useGameStore } from "../../stores/useGameStore";
 import { useAuthStore } from "../../stores/useAuthStore";
-
+import IconUsers from '../../assets/icons/IconUsers.svg'
 type PlayerRow = {
   id: string;
   name: string;
@@ -158,7 +158,11 @@ const LivePlayersPanel = () => {
   return (
     <aside className="w-full rounded-[20px] border border-(--border) bg-(--colorBg) p-4 xl:w-65">
       <div className="mb-4 flex items-center gap-2 text-(--text)">
-        <span className="text-lg leading-none">&#128101;</span>
+        <img
+          src={IconUsers}
+          alt="Live Players"
+          className="w-4 h-4"
+        />
         <h3 className="text-[12px] uppercase tracking-[0.2em]">
           Live Players ({playersCount})
         </h3>
@@ -180,21 +184,21 @@ const LivePlayersPanel = () => {
                 className="flex items-center gap-3 rounded-2xl border border-[#111a2c] bg-[#0f1728] px-3 py-3"
               >
                 <div
-                  className={`grid h-10 w-10 place-items-center rounded-full bg-linear-to-br ${player.accentClass} text-base font-semibold text-(--whiteText)`}
+                  className={`grid h-8 w-8 place-items-center rounded-full bg-linear-to-br ${player.accentClass} text-[12px] font-semibold text-(--whiteText)`}
                 >
                   {player.initial}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[20px] leading-[1.1] text-(--whiteText)">
+                  <p className="truncate text-[14px] leading-[1.1] text-(--whiteText)">
                     {player.name}
                   </p>
-                  <p className="text-[13px] uppercase text-(--text)">
+                  <p className="text-[12px] uppercase text-(--text)">
                     {player.amount} USD
                   </p>
                 </div>
 
-                <span className={`text-[18px] ${badge.className}`}>
+                <span className={`text-[12px] ${badge.className}`}>
                   {badge.text}
                 </span>
               </li>

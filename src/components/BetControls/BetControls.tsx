@@ -7,7 +7,11 @@ import BoxTag from "./BoxTag/BoxTag";
 import Button from "../../shared/ui/Button";
 import { getSocket } from "../../shared/api/socket";
 import { useAuthStore } from "../../stores/useAuthStore";
-import type { BetRejectedEvent } from "../../types/Events";
+import type {
+  BetCashedOutEvent,
+  BetLostEvent,
+  BetRejectedEvent,
+} from "../../types/Events";
 
 const BetControls = () => {
   const { data: balanceData } = useBalanceQuery();
@@ -48,11 +52,14 @@ const BetControls = () => {
 
   const [actionError, setActionError] = useState<string | null>(null);
   const [autoCashoutInput, setAutoCashoutInput] = useState<number>(2);
+  const [cashedOutProfit, setCashedOutProfit] = useState<number | null>(null);
+  const [lostAtMultiplier, setLostAtMultiplier] = useState<number | null>(null);
 
   const isAutoCashout = autoCashout != null;
   const hasActiveBet = myBet?.status === "placed";
   const canPlaceBet = phase === "waiting" && !hasActiveBet;
   const canCashout = phase === "running" && hasActiveBet;
+  const hasCashedOutThisRound = cashedOutProfit != null;
   const cashoutProfit = hasActiveBet
     ? Math.max(0, myBet.amount * multiplier - myBet.amount)
     : 0;
@@ -95,16 +102,40 @@ const BetControls = () => {
       setActionError(e.message || "Action rejected");
     };
 
-    socket.on("bet:placed", clearErrorOnSuccess);
-    socket.on("bet:cashedOut", clearErrorOnSuccess);
-    socket.on("bet:lost", clearErrorOnSuccess);
+    const onBetPlaced = () => {
+      setCashedOutProfit(null);
+      setLostAtMultiplier(null);
+    };
+
+    const onBetCashedOut = (e: BetCashedOutEvent) => {
+      setCashedOutProfit(Math.max(0, e.profit));
+      setLostAtMultiplier(null);
+      clearErrorOnSuccess();
+    };
+
+    const onBetLost = (e: BetLostEvent) => {
+      setLostAtMultiplier(Math.max(0, e.crashPoint));
+      setCashedOutProfit(null);
+      clearErrorOnSuccess();
+    };
+
+    const clearRoundOutcome = () => {
+      setCashedOutProfit(null);
+      setLostAtMultiplier(null);
+    };
+
+    socket.on("bet:placed", onBetPlaced);
+    socket.on("bet:cashedOut", onBetCashedOut);
+    socket.on("bet:lost", onBetLost);
     socket.on("bet:rejected", onBetRejected);
+    socket.on("round:waiting", clearRoundOutcome);
 
     return () => {
-      socket.off("bet:placed", clearErrorOnSuccess);
-      socket.off("bet:cashedOut", clearErrorOnSuccess);
-      socket.off("bet:lost", clearErrorOnSuccess);
+      socket.off("bet:placed", onBetPlaced);
+      socket.off("bet:cashedOut", onBetCashedOut);
+      socket.off("bet:lost", onBetLost);
       socket.off("bet:rejected", onBetRejected);
+      socket.off("round:waiting", clearRoundOutcome);
     };
   }, [apiKey]);
 
@@ -141,18 +172,28 @@ const BetControls = () => {
     }
   };
 
+  const shouldShowCrashedState =
+    lostAtMultiplier != null && phase !== "waiting";
+  const shouldWaitForNextRound =
+    hasCashedOutThisRound || (phase === "running" && !hasActiveBet);
+
   const actionText = betActionInFlight
     ? "Processing..."
-    : canCashout
-      ? `Cashout - ${cashoutProfit.toFixed(2)}`
-      : hasActiveBet
-        ? "Bet Placed"
-        : "Place Bet";
+    : shouldShowCrashedState
+      ? `Crashed @ ${lostAtMultiplier.toFixed(2)}×`
+      : shouldWaitForNextRound
+        ? "Wait for next round"
+        : canCashout
+          ? `Cashout - ${cashoutProfit.toFixed(2)}`
+          : hasActiveBet
+            ? "Bet Placed"
+            : "Place Bet";
 
   const actionDisabled =
     betActionInFlight ||
     (!canCashout && !canPlaceBet) ||
     (!canCashout && (betAmount <= 0 || betAmount > balance));
+  const isRunningWithMyBet = phase === "running" && myBet != null;
 
   return (
     <div className="flex flex-col w-65 gap-4 border border-(--border) rounded-[14px] bg-(--colorBg) p-4">
@@ -216,7 +257,22 @@ const BetControls = () => {
         text={actionText}
         onClick={canCashout ? handleCashout : handlePlaceBet}
         disabled={actionDisabled}
+        className={
+          shouldShowCrashedState
+            ? "bg-(--colorBtnCrash) disabled:bg-(--colorBtnCrash) text-(--whiteText)"
+            : shouldWaitForNextRound
+              ? "bg-(--textSecondary) text-(--whiteText)"
+              : isRunningWithMyBet
+                ? "bg-(--colorBtnCashOut)"
+                : undefined
+        }
       />
+
+      {cashedOutProfit != null && phase === "running" ? (
+        <p className="text-[14px] text-center text-(--highText)">
+          +{cashedOutProfit.toFixed(2)} USD
+        </p>
+      ) : null}
 
       {actionError ? (
         <p className="text-[12px] text-(--errorText)">{actionError}</p>

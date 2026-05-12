@@ -18,6 +18,8 @@
   --highBg: rgba(3, 46, 21, 0.4);
   --highBorder: #0d542b;
   --highText: #05df72;
+  --colorBtnCashOut: #22c55e;
+  --colorBtnCrash: #ef4444;
 }
 
 #root {

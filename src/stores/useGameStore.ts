@@ -44,7 +44,7 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>((set) => ({
-  betAmount: 0,
+  betAmount: 10,
   betActionInFlight: false,
   balance: 0,
   roundId: null,

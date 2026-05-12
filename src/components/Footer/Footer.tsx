@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useGameStore } from "../../stores/useGameStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import IconUser from "../../assets/icons/IconUser.svg";
@@ -10,8 +11,10 @@ const Footer = () => {
   const players = useGameStore((state) => state.players);
   const myName = useAuthStore((state) => state.apiKey);
   const logout = useAuthStore((state) => state.logout);
+  const [isMuted, setIsMuted] = useState(false);
 
-  const roundLabel = roundId ? roundId.slice(0, 8) : "—";
+  const roundDigits = roundId?.replace(/\D/g, "") ?? "";
+  const roundLabel = roundDigits || "—";
   const statusLabel =
     connectionStatus.charAt(0).toUpperCase() + connectionStatus.slice(1);
   const statusDotClass =
@@ -36,7 +39,7 @@ const Footer = () => {
           <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
           <span>{statusLabel}</span>
         </span>
-        <span className="">Round #{roundLabel}</span>
+        <span title={roundId ?? undefined}>Round #{roundLabel}</span>
         <span className="">{playersCount} players</span>
       </div>
       <div className="flex items-center gap-4">
@@ -58,12 +61,21 @@ const Footer = () => {
           />
         </button>
 
-        <button>
+        <button
+          type="button"
+          aria-pressed={isMuted}
+          aria-label={isMuted ? "Unmute sound" : "Mute sound"}
+          onClick={() => setIsMuted((value) => !value)}
+          className="relative flex h-8 w-8 items-center justify-center rounded-full cursor-pointer"
+        >
           <img
             src={IconSound}
             alt="Sound"
-            className="w-4 h-4"
+            className={`h-4 w-4 transition-opacity ${isMuted ? "opacity-60" : "opacity-100"}`}
           />
+          {isMuted ? (
+            <span className="pointer-events-none absolute h-0.5 w-5 -rotate-45 rounded-full bg-(--errorText)" />
+          ) : null}
         </button>
       </div>
     </footer>
