@@ -1,6 +1,7 @@
 import BetControls from "../components/BetControls/BetControls";
 import BetHistoryPanel from "../components/BetHistoryPanel/BetHistoryPanel";
 import TickChart from "../components/TickChart/TickChart";
+import LivePlayersPanel from "../components/LivePlayersPanel/LivePlayersPanel";
 
 const GamePage = () => {
   return (
@@ -13,7 +14,7 @@ const GamePage = () => {
         <TickChart />
       </div>
       <div className="w-full shrink-0 xl:w-65 xl:self-start">
-        <BetControls />
+        <LivePlayersPanel />
       </div>
     </div>
   );
