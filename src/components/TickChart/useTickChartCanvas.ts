@@ -25,8 +25,11 @@ export const useTickChartCanvas = ({
     if (!wrapper) return;
 
     const updateSize = () => {
-      const { width, height } = wrapper.getBoundingClientRect();
-      setSize({ width: Math.floor(width), height: Math.floor(height) });
+      // Use content-box size to avoid resize feedback loops from border-box measurements.
+      setSize({
+        width: Math.floor(wrapper.clientWidth),
+        height: Math.floor(wrapper.clientHeight),
+      });
     };
 
     updateSize();

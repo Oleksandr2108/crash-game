@@ -5,7 +5,11 @@ import IconUser from "../../assets/icons/IconUser.svg";
 import IconLogOut from "../../assets/icons/IconLogOut.svg";
 import IconSound from "../../assets/icons/IconSound.svg";
 
-const Footer = () => {
+type FooterProps = {
+  onPlayersClick?: () => void;
+};
+
+const Footer = ({ onPlayersClick }: FooterProps) => {
   const connectionStatus = useGameStore((state) => state.connectionStatus);
   const roundId = useGameStore((state) => state.roundId);
   const players = useGameStore((state) => state.players);
@@ -35,12 +39,22 @@ const Footer = () => {
      bg-(--colorBg) border-t border-(--border) px-4"
     >
       <div className="flex flex-wrap items-center gap-4">
-        <span className="flex items-center gap-2">
+        <span
+          className="flex items-center gap-2"
+          aria-label={`Connection status: ${connectionStatus}`}
+          title={connectionStatus}
+        >
           <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
-          <span>{statusLabel}</span>
+          <span className="hidden min-[770px]:inline">{statusLabel}</span>
         </span>
         <span title={roundId ?? undefined}>Round #{roundLabel}</span>
-        <span className="">{playersCount} players</span>
+        <button
+          type="button"
+          onClick={onPlayersClick}
+          className="cursor-pointer"
+        >
+          {playersCount} players
+        </button>
       </div>
       <div className="flex items-center gap-4">
         <button

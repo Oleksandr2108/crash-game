@@ -1,4 +1,5 @@
 import "./App.css";
+import { useState } from "react";
 
 import LoginPage from "./pages/LoginPage";
 import { useAuthStore } from "./stores/useAuthStore";
@@ -8,12 +9,25 @@ import Footer from "./components/Footer/Footer";
 
 function GameLayout() {
   useSocket();
+  const [isPlayersMenuOpen, setIsPlayersMenuOpen] = useState(false);
+
+  const togglePlayersMenu = () => {
+    setIsPlayersMenuOpen((prev) => !prev);
+  };
+
+  const closePlayersMenu = () => {
+    setIsPlayersMenuOpen(false);
+  };
+
   return (
     <>
-      <div className="h-dvh w-full px-4 py-4 sm:px-6 lg:px-10 overflow-hidden pb-14">
-        <GamePage />
+      <div className="h-dvh w-full overflow-x-hidden overflow-y-auto px-4 py-4 pb-14 sm:px-6 lg:px-10 min-[770px]:overflow-hidden">
+        <GamePage
+          isPlayersMenuOpen={isPlayersMenuOpen}
+          onClosePlayersMenu={closePlayersMenu}
+        />
       </div>
-      <Footer />
+      <Footer onPlayersClick={togglePlayersMenu} />
     </>
   );
 }

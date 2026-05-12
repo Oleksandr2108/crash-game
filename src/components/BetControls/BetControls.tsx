@@ -30,7 +30,7 @@ const BetControls = () => {
   } = useBetControlsModel();
 
   return (
-    <div className="flex flex-col w-65 gap-4 border border-(--border) rounded-[14px] bg-(--colorBg) p-4">
+    <div className="flex w-full flex-col gap-4 border border-(--border) rounded-[14px] bg-(--colorBg) p-4 min-[770px]:w-65">
       <BetAmountSection
         betAmount={betAmount}
         balance={balance}
