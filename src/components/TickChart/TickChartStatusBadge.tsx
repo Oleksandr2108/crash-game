@@ -8,12 +8,12 @@ const TickChartStatusBadge = ({ phase }: TickChartStatusBadgeProps) => {
   return (
     <div className="absolute left-4 top-4 z-20 rounded-full border border-(--border) bg-(--colorBgInput)/80 px-3 py-1">
       <p
-        className={`text-[10px] uppercase tracking-wide ${
+        className={`text-[12px] uppercase tracking-wide ${
           phase === "running"
-            ? "text-[#22e784]"
+            ? "text-(--highText)"
             : phase === "crashed"
-              ? "text-[#ff6467]"
-              : "text-(--text)"
+              ? "text-(--errorText)"
+              : "text-(--yellowColor)"
         }`}
       >
         {phase}

@@ -42,3 +42,25 @@ input {
 input:focus {
   outline: none;
 }
+
+.bet-history-scroll {
+  scrollbar-width: none;
+  scrollbar-color: #2a3144 transparent;
+}
+
+.bet-history-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.bet-history-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bet-history-scroll::-webkit-scrollbar-thumb {
+  background: #2a3144;
+  border-radius: 999px;
+}
+
+.bet-history-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a445c;
+}

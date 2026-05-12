@@ -14,8 +14,9 @@ const BetHistoryPanel = () => {
     if (!rounds) return;
     setRecentRounds({ rounds });
   }, [rounds, setRecentRounds]);
+
   return (
-    <div className=" flex gap-2 w-full ">
+    <div className="bet-history-scroll flex w-full gap-2 overflow-x-auto overflow-y-hidden pb-1">
       {recentRounds?.map((round: ResentItem) => (
         <BetHistoryItem
           key={round.roundId}

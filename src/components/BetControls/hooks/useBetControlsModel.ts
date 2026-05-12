@@ -4,13 +4,35 @@ import { useBalanceQuery } from "../../../entities/queries/useBalanceQuery";
 import { getSocket } from "../../../shared/api/socket";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import { useGameStore } from "../../../stores/useGameStore";
-import type {
-  BetCashedOutEvent,
-  BetLostEvent,
-  BetRejectedEvent,
-} from "../../../types/Events";
+import { useBetControlsSocket } from "./useBetControlsSocket";
+import type { Phase } from "../../../types/Events";
 
-export function useBetControlsModel() {
+export interface UseBetControlsModelResult {
+  betAmount: number;
+  balance: number;
+  halfBet: () => void;
+  doubleBet: () => void;
+  maxBet: () => void;
+  phase: Phase;
+  autoCashoutInput: number;
+  isAutoCashout: boolean;
+  handleBetChange: (value: number) => void;
+  handleAutoCashoutToggle: () => void;
+  handleAutoCashoutChange: (value: number) => void;
+  actionText: string;
+  actionDisabled: boolean;
+  shouldShowCrashedState: boolean;
+  shouldWaitForNextRound: boolean;
+  isRunningWithMyBet: boolean;
+  cashedOutProfit: number | null;
+  actionError: string | null;
+  isBetInputDisabled: boolean;
+  handlePlaceBet: () => void;
+  handleCashout: () => void;
+  canCashout: boolean;
+}
+
+export function useBetControlsModel(): UseBetControlsModelResult {
   const { data: balanceData } = useBalanceQuery();
   const {
     betAmount,
@@ -87,54 +109,30 @@ export function useBetControlsModel() {
     }
   }, [balanceData, setBalance]);
 
-  useEffect(() => {
-    if (!apiKey) return;
-    const socket = getSocket();
-
-    const clearErrorOnSuccess = () => {
+  useBetControlsSocket({
+    apiKey,
+    onBetRejected: (message: string) => {
+      setActionError(message);
+    },
+    onBetPlaced: () => {
+      setCashedOutProfit(null);
+      setLostAtMultiplier(null);
+    },
+    onBetCashedOut: (profit: number) => {
+      setCashedOutProfit(Math.max(0, profit));
+      setLostAtMultiplier(null);
       setActionError(null);
-    };
-
-    const onBetRejected = (e: BetRejectedEvent) => {
-      setActionError(e.message || "Action rejected");
-    };
-
-    const onBetPlaced = () => {
+    },
+    onBetLost: (crashPoint: number) => {
+      setLostAtMultiplier(Math.max(0, crashPoint));
+      setCashedOutProfit(null);
+      setActionError(null);
+    },
+    onRoundWaiting: () => {
       setCashedOutProfit(null);
       setLostAtMultiplier(null);
-    };
-
-    const onBetCashedOut = (e: BetCashedOutEvent) => {
-      setCashedOutProfit(Math.max(0, e.profit));
-      setLostAtMultiplier(null);
-      clearErrorOnSuccess();
-    };
-
-    const onBetLost = (e: BetLostEvent) => {
-      setLostAtMultiplier(Math.max(0, e.crashPoint));
-      setCashedOutProfit(null);
-      clearErrorOnSuccess();
-    };
-
-    const clearRoundOutcome = () => {
-      setCashedOutProfit(null);
-      setLostAtMultiplier(null);
-    };
-
-    socket.on("bet:placed", onBetPlaced);
-    socket.on("bet:cashedOut", onBetCashedOut);
-    socket.on("bet:lost", onBetLost);
-    socket.on("bet:rejected", onBetRejected);
-    socket.on("round:waiting", clearRoundOutcome);
-
-    return () => {
-      socket.off("bet:placed", onBetPlaced);
-      socket.off("bet:cashedOut", onBetCashedOut);
-      socket.off("bet:lost", onBetLost);
-      socket.off("bet:rejected", onBetRejected);
-      socket.off("round:waiting", clearRoundOutcome);
-    };
-  }, [apiKey]);
+    },
+  });
 
   const handlePlaceBet = () => {
     if (!canPlaceBet || betAmount <= 0 || betAmount > balance) return;
@@ -169,10 +167,12 @@ export function useBetControlsModel() {
     }
   };
 
+  const isRunning = phase === "running";
+  const hasInvalidBetAmount = betAmount <= 0 || betAmount > balance;
   const shouldShowCrashedState =
     lostAtMultiplier != null && phase !== "waiting";
   const shouldWaitForNextRound =
-    hasCashedOutThisRound || (phase === "running" && !hasActiveBet);
+    hasCashedOutThisRound || (isRunning && !hasActiveBet);
 
   const actionText = betActionInFlight
     ? "Processing..."
@@ -187,11 +187,9 @@ export function useBetControlsModel() {
             : "Place Bet";
 
   const actionDisabled =
-    betActionInFlight ||
-    (!canCashout && !canPlaceBet) ||
-    (!canCashout && (betAmount <= 0 || betAmount > balance));
-  const isRunningWithMyBet = phase === "running" && myBet != null;
-  const isBetInputDisabled = phase === "running";
+    betActionInFlight || (!canCashout && (!canPlaceBet || hasInvalidBetAmount));
+  const isRunningWithMyBet = isRunning && myBet != null;
+  const isBetInputDisabled = isRunning;
 
   return {
     betAmount,

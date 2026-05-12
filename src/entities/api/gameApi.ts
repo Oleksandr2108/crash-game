@@ -9,7 +9,7 @@ export const gameApi = {
     return response.data;
   },
   async getRecent(apiKey: string) {
-    const response = await httpClient.get("rounds/recent?limit=10", {
+    const response = await httpClient.get("rounds/recent", {
       headers: { "X-API-Key": apiKey },
     });
     return response.data;

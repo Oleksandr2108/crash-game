@@ -15,17 +15,17 @@ const TickChartCenterValue = ({
     <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
       {isWaiting && remainingSeconds != null ? (
         <div className="flex flex-col items-center gap-1">
-          <p className="text-[48px] leading-none font-medium text-[#ffb900]">
+          <p className="text-[60px] leading-none font-medium text-(--yellowColor)">
             {remainingSeconds.toFixed(1)}s
           </p>
-          <p className="text-[12px] text-(--textSecondary)">
+          <p className="text-[16px] text-(--text)">
             Next round starting...
           </p>
         </div>
       ) : (
         <p
-          className={`text-[64px] leading-none font-medium ${
-            isCrashed ? "text-[#ff4e60]" : "text-[#22e784]"
+          className={`text-[96px] leading-none font-medium ${
+            isCrashed ? "text-(--errorText)" : "text-(--highText)"
           }`}
         >
           {currentValue.toFixed(2)}x

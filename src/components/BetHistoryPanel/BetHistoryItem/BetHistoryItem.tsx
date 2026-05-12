@@ -12,7 +12,7 @@ const BetHistoryItem = ({ crashPoint }: BetHistoryItemProps) => {
 
   return (
     <div
-      className={`w-17 h-[30px] py-1 rounded-full border flex items-center justify-center ${tierClass}`}
+      className={`w-17 h-7.5 shrink-0 py-1 rounded-full border flex items-center justify-center ${tierClass}`}
     >
       <p className="text-[14px] ">{crashPoint.toFixed(2)}x</p>
     </div>

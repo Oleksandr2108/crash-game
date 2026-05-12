@@ -1,5 +1,6 @@
 import Button from "../../../shared/ui/Button";
 import type { Phase } from "../../../types/Events";
+import IconBalance from '../../../assets/icons/IconBalance.svg'
 
 interface ActionSectionProps {
   actionText: string;
@@ -52,8 +53,14 @@ const ActionSection = ({
       {actionError ? (
         <p className="text-[12px] text-(--errorText)">{actionError}</p>
       ) : null}
+      <div className="flex items-center justify-between border-t border-(--border) pt-4">
+        <div className="flex items-center justify-center gap-2">
 
-      <p className="text-[12px] text-(--text)">Balance: {balance.toFixed(2)}</p>
+       <img src={IconBalance} alt="Balance" className="" />
+      <p className="text-[12px] text-(--text)">Balance:</p>
+        </div>
+      <p className="text-[12px] text-(--yellowColor)"> {balance.toFixed(2)}</p>
+      </div>
     </>
   );
 };
