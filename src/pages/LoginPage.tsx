@@ -17,19 +17,20 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 m-auto">
+    <div className="flex w-full flex-col items-center justify-center gap-4 px-4 m-auto">
       <img
         src={Logo}
         alt="logo"
+        className="w-16 min-[770px]:w-auto"
       />
-      <h1 className="text-[36px] text-(--whiteText)">
+      <h1 className="text-[28px] min-[770px]:text-[36px] text-(--whiteText)">
         <span className="text-(--yellowColor)">Crash</span> Game
       </h1>
-      <p className="text-[16px] text-(--text)">
+      <p className="text-[14px] min-[770px]:text-[16px] text-(--text) text-center">
         High-stakes real-time betting. Cash out before the crash.
       </p>
 
-      <div className=" border border-(--border) rounded-[14px] w-md p-6 bg-(--colorBg)">
+      <div className="w-full max-w-md border border-(--border) rounded-[14px] p-5 min-[770px]:p-6 bg-(--colorBg)">
         <h2 className="text-[12px] text-(--text) uppercase">Username</h2>
         <input
           type="text"

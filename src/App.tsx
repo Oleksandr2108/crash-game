@@ -34,7 +34,17 @@ function GameLayout() {
 
 function App() {
   const apiKey = useAuthStore((state) => state.apiKey);
-  return <>{apiKey ? <GameLayout /> : <LoginPage />}</>;
+  return (
+    <>
+      {apiKey ? (
+        <GameLayout />
+      ) : (
+        <div className="flex h-dvh w-full items-center justify-center overflow-y-auto px-4 py-8">
+          <LoginPage />
+        </div>
+      )}
+    </>
+  );
 }
 
 export default App;
