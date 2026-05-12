@@ -6,6 +6,16 @@ export const httpClient = axios.create({
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
-    "X-API-Key": STORAGE_KEY,
   },
+});
+
+httpClient.interceptors.request.use((config) => {
+  const apiKey =
+    localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
+
+  if (apiKey) {
+    config.headers["X-API-Key"] = apiKey.trim();
+  }
+
+  return config;
 });

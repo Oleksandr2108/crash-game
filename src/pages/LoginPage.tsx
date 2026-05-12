@@ -7,10 +7,13 @@ const LoginPage = () => {
   const setApiKey = useAuthStore((state) => state.setApiKey);
   const [value, setValue] = useState("");
 
+  const isAscii = (s: string) => /^[\x20-\x7E]+$/.test(s);
+  const trimmed = value.trim();
+  const isValid = trimmed.length >= 3 && isAscii(trimmed);
+
   const handleLogin = () => {
-    const v = value.trim();
-    if (!v) return;
-    setApiKey(v);
+    if (!isValid) return;
+    setApiKey(trimmed);
   };
 
   return (
@@ -33,16 +36,18 @@ const LoginPage = () => {
           placeholder="Enter your username"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="w-full p-2 rounded-[10px] border border-(--border) bg-(--colorBgInput) text-(--whiteText) placeholder:(text-(--textSecondary)) my-2"
+          className="w-full p-2 rounded-[10px] border border-(--border) bg-(--colorBgInput) text-(--whiteText) placeholder:(text-(--textSecondary)) my-2 outline-none"
         />
-        <p className="text-[12px] text-(--textSecondary) mb-6">
-          Minimum 3 characters required
+        <p className="text-[12px] mb-6 text-(--textSecondary)">
+          {value.length > 0 && !isAscii(value.trim())
+            ? "Only Latin letters and symbols allowed"
+            : "Minimum 3 characters required"}
         </p>
 
         <Button
           text="Join Game"
           onClick={handleLogin}
-          disabled={value.trim().length < 3}
+          disabled={!isValid}
         />
       </div>
 
