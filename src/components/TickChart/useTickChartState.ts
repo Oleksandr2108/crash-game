@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  playChartLoop,
+  playCrashSound,
+  stopChartLoop,
+} from "../../shared/lib/gameSounds";
 import { useGameStore } from "../../stores/useGameStore";
 
 export const MAX_POINTS = 240;
 
 export const useTickChartState = () => {
   const lastRoundIdRef = useRef<string | null>(null);
+  const lastPhaseRef = useRef<string | null>(null);
 
   const roundId = useGameStore((s) => s.roundId);
   const phase = useGameStore((s) => s.phase);
@@ -46,6 +52,30 @@ export const useTickChartState = () => {
     }, 100);
     return () => window.clearInterval(timer);
   }, [isWaiting, endsAt]);
+
+  useEffect(() => {
+    const prevPhase = lastPhaseRef.current;
+
+    if (phase === "running" && prevPhase !== "running") {
+      playChartLoop();
+    }
+
+    if (prevPhase === "running" && phase !== "running") {
+      stopChartLoop();
+    }
+
+    if (phase === "crashed" && prevPhase !== "crashed") {
+      playCrashSound();
+    }
+
+    lastPhaseRef.current = phase;
+  }, [phase]);
+
+  useEffect(() => {
+    return () => {
+      stopChartLoop();
+    };
+  }, []);
 
   useEffect(() => {
     if (phase !== "running") return;

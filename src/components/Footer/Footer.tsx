@@ -1,4 +1,9 @@
 import { useState } from "react";
+import {
+  isSoundMuted,
+  playChartLoop,
+  setSoundMuted,
+} from "../../shared/lib/gameSounds";
 import { useGameStore } from "../../stores/useGameStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import IconUser from "../../assets/icons/IconUser.svg";
@@ -11,11 +16,22 @@ type FooterProps = {
 
 const Footer = ({ onPlayersClick }: FooterProps) => {
   const connectionStatus = useGameStore((state) => state.connectionStatus);
+  const phase = useGameStore((state) => state.phase);
   const roundId = useGameStore((state) => state.roundId);
   const players = useGameStore((state) => state.players);
   const myName = useAuthStore((state) => state.apiKey);
   const logout = useAuthStore((state) => state.logout);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(isSoundMuted());
+
+  const handleToggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    setSoundMuted(nextMuted);
+
+    if (!nextMuted && phase === "running") {
+      playChartLoop();
+    }
+  };
 
   const roundDigits = roundId?.replace(/\D/g, "") ?? "";
   const roundLabel = roundDigits || "—";
@@ -79,7 +95,7 @@ const Footer = ({ onPlayersClick }: FooterProps) => {
           type="button"
           aria-pressed={isMuted}
           aria-label={isMuted ? "Unmute sound" : "Mute sound"}
-          onClick={() => setIsMuted((value) => !value)}
+          onClick={handleToggleMute}
           className="relative flex h-8 w-8 items-center justify-center rounded-full cursor-pointer"
         >
           <img
