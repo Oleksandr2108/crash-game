@@ -14,4 +14,8 @@ export const gameApi = {
     });
     return response.data;
   },
+  async claimBonus() {
+    const response = await httpClient.post("bonus/claim");
+    return response.data;
+  },
 };
