@@ -10,13 +10,6 @@ export type PlayerRow = {
   multiplier: number | null;
 };
 
-export type LivePlayerPayload = {
-  username?: unknown;
-  amount?: unknown;
-  status?: unknown;
-  multiplier?: unknown;
-};
-
 export type ResultBadge = {
   text: string;
   className: string;

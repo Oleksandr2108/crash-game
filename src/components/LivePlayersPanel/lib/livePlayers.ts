@@ -1,5 +1,6 @@
 import type { Phase } from "../../../types/Events";
-import type { LivePlayerPayload, PlayerRow, ResultBadge } from "../types";
+import type { LivePlayerPayload } from "../../../entities/model/types";
+import type { PlayerRow, ResultBadge } from "../types";
 
 const accentClasses = [
   "from-indigo-500 to-violet-400",
@@ -11,63 +12,11 @@ const accentClasses = [
   "from-lime-500 to-green-400",
 ];
 
-const botNames = [
-  "crypto_king",
-  "moon_walker",
-  "stake_master",
-  "lucky_seven",
-  "bet_ninja",
-  "jet_hunter",
-  "cashout_pro",
-  "risk_taker",
-  "hodl_wizard",
-  "edge_player",
-];
-
-const makeAmount = (index: number) => 10 + ((index * 17) % 18) * 5;
-
-export const toSafeNumber = (value: unknown, fallback = 0) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-};
-
-const toStatus = (value: unknown) =>
-  typeof value === "string" ? value.toLowerCase() : "bet";
-
-export const buildPlayers = (count: number, me: string | null): PlayerRow[] => {
-  if (count <= 0) return [];
-
-  const rows: PlayerRow[] = [];
-  const safeCount = Math.min(count, 12);
-
-  if (me) {
-    rows.push({
-      id: "me",
-      name: me,
-      amount: 50,
-      accentClass: accentClasses[0],
-      initial: me[0]?.toUpperCase() || "Y",
-      status: "bet",
-      multiplier: null,
-    });
-  }
-
-  let botIndex = 0;
-  while (rows.length < safeCount) {
-    const name = botNames[botIndex % botNames.length];
-    rows.push({
-      id: `bot-${botIndex}`,
-      name,
-      amount: makeAmount(botIndex),
-      accentClass: accentClasses[(botIndex + 1) % accentClasses.length],
-      initial: name[0].toUpperCase(),
-      status: "bet",
-      multiplier: null,
-    });
-    botIndex += 1;
-  }
-
-  return rows;
+export const normalizePlayersCount = (value: unknown) => {
+  if (Array.isArray(value)) return value.length;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value && typeof value === "object") return 1;
+  return 0;
 };
 
 export const buildPlayersFromPayload = (
@@ -79,10 +28,12 @@ export const buildPlayersFromPayload = (
     return {
       id: `${name}-${index}`,
       name,
-      amount: toSafeNumber(player.amount, 0),
+      amount: Number.isFinite(Number(player.amount))
+        ? Number(player.amount)
+        : 0,
       accentClass: accentClasses[index % accentClasses.length],
       initial: name[0]?.toUpperCase() || "P",
-      status: toStatus(player.status),
+      status: typeof player.status === "string" ? player.status : "bet",
       multiplier: Number.isFinite(Number(player.multiplier))
         ? Number(player.multiplier)
         : null,

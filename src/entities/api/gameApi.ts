@@ -1,5 +1,5 @@
 import { httpClient } from "../../shared/api/axios";
-import type { BalanceResponse } from "../model/types";
+import type { BalanceResponse, BonusClaimResponse } from "../model/types";
 
 export const gameApi = {
   async getBalance(apiKey: string): Promise<BalanceResponse> {
@@ -14,7 +14,7 @@ export const gameApi = {
     });
     return response.data;
   },
-  async claimBonus() {
+  async claimBonus(): Promise<BonusClaimResponse> {
     const response = await httpClient.post("bonus/claim");
     return response.data;
   },

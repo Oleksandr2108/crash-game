@@ -9,6 +9,8 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import IconUser from "../../assets/icons/IconUser.svg";
 import IconLogOut from "../../assets/icons/IconLogOut.svg";
 import IconSound from "../../assets/icons/IconSound.svg";
+import IconWiFi from "../../assets/icons/IconWiFi.svg";
+import { normalizePlayersCount } from "../LivePlayersPanel/lib/livePlayers";
 
 type FooterProps = {
   onPlayersClick?: () => void;
@@ -43,11 +45,7 @@ const Footer = ({ onPlayersClick }: FooterProps) => {
       : connectionStatus === "error"
         ? "bg-(--errorText)"
         : "bg-(--text)";
-  const playersCount = Array.isArray(players)
-    ? players.length
-    : Number.isFinite(Number(players))
-      ? Number(players)
-      : 0;
+  const playersCount = normalizePlayersCount(players);
 
   return (
     <footer
@@ -67,9 +65,15 @@ const Footer = ({ onPlayersClick }: FooterProps) => {
         <button
           type="button"
           onClick={onPlayersClick}
-          className="cursor-pointer"
+          className="cursor-pointer flex items-center gap-1"
         >
-          {playersCount} players
+          <img
+            src={IconWiFi}
+            alt=""
+            aria-hidden="true"
+            className="h-4 w-4"
+          />
+          {playersCount}
         </button>
       </div>
       <div className="flex items-center gap-4">

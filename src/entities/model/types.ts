@@ -2,7 +2,23 @@ export interface BalanceResponse {
   balance: number;
 }
 
-export type Tier = 'low' | 'mid' | 'high';
+export interface BonusClaimResponse {
+  claimed: boolean;
+  amount: number;
+  balance: number;
+  claimedAt: string;
+  nextClaimAt: string;
+  retryAfterMs: number;
+}
+
+export interface LivePlayerPayload {
+  username?: unknown;
+  amount?: unknown;
+  status?: unknown;
+  multiplier?: unknown;
+}
+
+export type Tier = "low" | "mid" | "high";
 
 export interface ResentItem {
   roundId: string;
@@ -11,6 +27,6 @@ export interface ResentItem {
   tier: Tier;
 }
 
-export interface RecentResponse { 
+export interface RecentResponse {
   rounds: ResentItem[];
 }

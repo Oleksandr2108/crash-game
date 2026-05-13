@@ -15,19 +15,19 @@ export interface RoundStateEvent {
   currentMultiplier: number;
   crashPoint: number | null;
   yourBet: MyBet | null;
-  players: number;
+  players: unknown;
 }
 
 export interface RoundStartEvent {
   roundId: string;
   startedAt: string;
-  players: number;
+  players: unknown;
 }
 
 export interface RoundWaitingEvent {
   roundId: string;
   endsAt: string;
-  players: number;
+  players: unknown;
 }
 
 export interface RoundTickEvent {
@@ -40,7 +40,7 @@ export interface RoundCrashEvent {
   roundId: string;
   crashPoint: number;
   tier: "low" | "mid" | "high";
-  players: number;
+  players: unknown;
 }
 
 export interface BetPlacedEvent {
