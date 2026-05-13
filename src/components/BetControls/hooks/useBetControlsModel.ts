@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useBalanceQuery } from "../../../entities/queries/useBalanceQuery";
 import { getSocket } from "../../../shared/api/socket";
-import { playBetSound, playCashoutSound } from "../../../shared/lib/gameSounds";
+import { playBetSound } from "../../../shared/lib/gameSounds";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import { useGameStore } from "../../../stores/useGameStore";
 import { useBetControlsSocket } from "./useBetControlsSocket";
@@ -161,7 +161,6 @@ export function useBetControlsModel(): UseBetControlsModelResult {
 
     setActionError(null);
     setBetActionInFlight(true);
-    playCashoutSound();
     try {
       getSocket().emit("bet:cashout", {});
     } catch {

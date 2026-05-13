@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent } from "react";
 import { getSocket } from "../../../shared/api/socket";
+import { playCashoutSound } from "../../../shared/lib/gameSounds";
 import type {
   BetCashedOutEvent,
   BetLostEvent,
@@ -32,6 +33,7 @@ export function useBetControlsSocket({
   });
 
   const handleBetCashedOut = useEffectEvent((event: BetCashedOutEvent) => {
+    playCashoutSound();
     onBetCashedOut(event.profit);
   });
 
