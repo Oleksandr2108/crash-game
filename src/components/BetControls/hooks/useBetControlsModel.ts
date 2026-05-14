@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useBalanceQuery } from "../../../entities/queries/useBalanceQuery";
 import { getSocket } from "../../../shared/api/socket";
@@ -49,7 +49,7 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     setAutoCashout,
     myBet,
     phase,
-    multiplier,
+    liveCashoutProfit,
   } = useGameStore(
     useShallow((s) => ({
       betActionInFlight: s.betActionInFlight,
@@ -65,7 +65,10 @@ export function useBetControlsModel(): UseBetControlsModelResult {
       setAutoCashout: s.setAutoCashout,
       myBet: s.myBet,
       phase: s.phase,
-      multiplier: s.multiplier,
+      liveCashoutProfit:
+        s.phase === "running" && s.myBet?.status === "placed"
+          ? Math.max(0, s.myBet.amount * s.multiplier - s.myBet.amount)
+          : 0,
     })),
   );
   const apiKey = useAuthStore((s) => s.apiKey);
@@ -80,29 +83,33 @@ export function useBetControlsModel(): UseBetControlsModelResult {
   const canPlaceBet = phase === "waiting" && !hasActiveBet;
   const canCashout = phase === "running" && hasActiveBet;
   const hasCashedOutThisRound = cashedOutProfit != null;
-  const cashoutProfit = hasActiveBet
-    ? Math.max(0, myBet.amount * multiplier - myBet.amount)
-    : 0;
+  const cashoutProfit = liveCashoutProfit;
 
-  const handleBetChange = (value: number) => {
-    setBetAmount(value);
-  };
+  const handleBetChange = useCallback(
+    (value: number) => {
+      setBetAmount(value);
+    },
+    [setBetAmount],
+  );
 
-  const handleAutoCashoutToggle = () => {
+  const handleAutoCashoutToggle = useCallback(() => {
     if (isAutoCashout) {
       setAutoCashout(null);
     } else {
       const num = autoCashoutInput || 2;
       setAutoCashout(num);
     }
-  };
+  }, [autoCashoutInput, isAutoCashout, setAutoCashout]);
 
-  const handleAutoCashoutChange = (value: number) => {
-    setAutoCashoutInput(value);
-    if (!Number.isNaN(value) && value >= 1.01) {
-      setAutoCashout(value);
-    }
-  };
+  const handleAutoCashoutChange = useCallback(
+    (value: number) => {
+      setAutoCashoutInput(value);
+      if (!Number.isNaN(value) && value >= 1.01) {
+        setAutoCashout(value);
+      }
+    },
+    [setAutoCashout],
+  );
 
   useEffect(() => {
     if (balanceData) {
@@ -135,7 +142,7 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     },
   });
 
-  const handlePlaceBet = () => {
+  const handlePlaceBet = useCallback(() => {
     if (!canPlaceBet || betAmount <= 0 || betAmount > balance) return;
     if (isAutoCashout && (autoCashout == null || autoCashout < 1.01)) {
       setActionError("Auto cash out must be >= 1.01");
@@ -154,9 +161,16 @@ export function useBetControlsModel(): UseBetControlsModelResult {
       setBetActionInFlight(false);
       setActionError("Failed to place bet");
     }
-  };
+  }, [
+    autoCashout,
+    balance,
+    betAmount,
+    canPlaceBet,
+    isAutoCashout,
+    setBetActionInFlight,
+  ]);
 
-  const handleCashout = () => {
+  const handleCashout = useCallback(() => {
     if (!canCashout) return;
 
     setActionError(null);
@@ -167,7 +181,7 @@ export function useBetControlsModel(): UseBetControlsModelResult {
       setBetActionInFlight(false);
       setActionError("Failed to cash out");
     }
-  };
+  }, [canCashout, setBetActionInFlight]);
 
   const isRunning = phase === "running";
   const hasInvalidBetAmount = betAmount <= 0 || betAmount > balance;

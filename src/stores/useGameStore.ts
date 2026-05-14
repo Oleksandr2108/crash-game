@@ -111,7 +111,8 @@ export const useGameStore = create<GameState>((set) => ({
     set((state) => ({ betAmount: Math.floor(state.betAmount / 2) })),
   doubleBet: () => set((state) => ({ betAmount: state.betAmount * 2 })),
   maxBet: () => set((state) => ({ betAmount: state.balance })),
-  setBalance: (balance) => set({ balance }),
+  setBalance: (balance) =>
+    set((state) => (state.balance === balance ? state : { balance })),
   setConnectionStatus: (status) => set({ connectionStatus: status }),
   onGameStart: () => set({ phase: "running", multiplier: 1, crashPoint: null }),
   onMultiplierUpdate: (multiplier) => set({ multiplier }),

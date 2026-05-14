@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Input from "../Input/Input";
 
 interface AutoCashoutSectionProps {
@@ -54,4 +55,4 @@ const AutoCashoutSection = ({
   );
 };
 
-export default AutoCashoutSection;
+export default memo(AutoCashoutSection);

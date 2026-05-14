@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Button from "../../../shared/ui/Button";
 import type { Phase } from "../../../types/Events";
 import IconBalance from "../../../assets/icons/IconBalance.svg";
@@ -97,4 +98,4 @@ const ActionSection = ({
   );
 };
 
-export default ActionSection;
+export default memo(ActionSection);

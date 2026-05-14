@@ -1,3 +1,4 @@
+import { memo } from "react";
 import BoxTag from "../BoxTag/BoxTag";
 import Input from "../Input/Input";
 
@@ -54,4 +55,4 @@ const BetAmountSection = ({
   );
 };
 
-export default BetAmountSection;
+export default memo(BetAmountSection);

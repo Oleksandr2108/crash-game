@@ -1,9 +1,10 @@
+import { memo } from "react";
 import BetAmountSection from "./BetAmountSection/BetAmountSection";
 import AutoCashoutSection from "./AutoCashoutSection/AutoCashoutSection";
 import ActionSection from "./ActionSection/ActionSection";
 import { useBetControlsModel } from "./hooks/useBetControlsModel";
 
-const BetControls = () => {
+const BetControlsContent = memo(() => {
   const {
     betAmount,
     balance,
@@ -30,7 +31,7 @@ const BetControls = () => {
   } = useBetControlsModel();
 
   return (
-    <div className="flex w-full flex-col gap-4 border border-(--border) rounded-[14px] bg-(--colorBg) p-4 min-[770px]:w-65">
+    <>
       <BetAmountSection
         betAmount={betAmount}
         balance={balance}
@@ -61,7 +62,16 @@ const BetControls = () => {
         actionError={actionError}
         balance={balance}
       />
+    </>
+  );
+});
+
+const BetControls = () => {
+  return (
+    <div className="flex w-full flex-col gap-4 border border-(--border) rounded-[14px] bg-(--colorBg) p-4 min-[770px]:w-65">
+      <BetControlsContent />
     </div>
   );
 };
-export default BetControls;
+
+export default memo(BetControls);
