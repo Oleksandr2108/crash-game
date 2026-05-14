@@ -51,7 +51,7 @@ const GamePage = ({ isPlayersMenuOpen, onClosePlayersMenu }: GamePageProps) => {
           ×
         </button>
         <div className="h-[calc(100%-2.75rem)] overflow-y-auto">
-          <LivePlayersPanel />
+          {isPlayersMenuOpen ? <LivePlayersPanel /> : null}
         </div>
       </div>
     </>

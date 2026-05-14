@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Phase } from "../../../types/Events";
 import LivePlayerRow from "./LivePlayerRow";
 import type { PlayerRow } from "../types";
@@ -21,4 +22,4 @@ const LivePlayersList = ({ players, phase }: LivePlayersListProps) => {
   );
 };
 
-export default LivePlayersList;
+export default memo(LivePlayersList);

@@ -47,6 +47,44 @@ export function useSocket() {
       return [];
     };
 
+    const areSameLivePlayer = (
+      a: LivePlayerPayload,
+      b: LivePlayerPayload,
+      includeOutcomeFields: boolean,
+    ) => {
+      if (
+        !Object.is(a.username, b.username) ||
+        !Object.is(a.amount, b.amount)
+      ) {
+        return false;
+      }
+
+      if (!includeOutcomeFields) {
+        return true;
+      }
+
+      return (
+        Object.is(a.status, b.status) && Object.is(a.multiplier, b.multiplier)
+      );
+    };
+
+    const areLivePlayersEqual = (
+      prev: LivePlayerPayload[],
+      next: LivePlayerPayload[],
+      includeOutcomeFields: boolean,
+    ) => {
+      if (prev === next) return true;
+      if (prev.length !== next.length) return false;
+
+      for (let i = 0; i < prev.length; i += 1) {
+        if (!areSameLivePlayer(prev[i], next[i], includeOutcomeFields)) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
     const applyRoundState = (state: {
       phase: "waiting" | "running" | "crashed";
       roundId: string;
@@ -57,17 +95,31 @@ export function useSocket() {
       players: unknown;
       multiplier?: number;
     }) => {
-      g().setPhase(state.phase);
-      g().setRoundId(state.roundId);
-      g().setStartedAt(state.startedAt);
-      g().setEndsAt(state.endsAt);
-      g().setCrashPoint(state.crashPoint);
-      g().setMyBet(state.myBet);
-      g().setPlayers(normalizePlayersCount(state.players));
-      g().setLivePlayers(normalizeLivePlayers(state.players));
-      if (typeof state.multiplier === "number") {
-        g().setMultiplier(state.multiplier);
-      }
+      const nextLivePlayers = normalizeLivePlayers(state.players);
+      const prevLivePlayers = g().livePlayers;
+      const includeOutcomeFields = state.phase === "crashed";
+
+      const updates = {
+        phase: state.phase,
+        roundId: state.roundId,
+        startedAt: state.startedAt,
+        endsAt: state.endsAt,
+        crashPoint: state.crashPoint,
+        myBet: state.myBet,
+        players: normalizePlayersCount(state.players),
+        livePlayers: areLivePlayersEqual(
+          prevLivePlayers,
+          nextLivePlayers,
+          includeOutcomeFields,
+        )
+          ? prevLivePlayers
+          : nextLivePlayers,
+        ...(typeof state.multiplier === "number"
+          ? { multiplier: state.multiplier }
+          : {}),
+      };
+
+      useGameStore.setState(updates);
     };
 
     const clearBetFlightState = () => {
@@ -84,6 +136,15 @@ export function useSocket() {
     };
 
     const onState = (e: RoundStateEvent) => {
+      const current = g();
+      if (
+        e.phase === "running" &&
+        current.phase === "running" &&
+        current.roundId === e.roundId
+      ) {
+        return;
+      }
+
       applyRoundState({
         phase: e.phase,
         roundId: e.roundId,
@@ -130,9 +191,17 @@ export function useSocket() {
     };
 
     const onCrash = (e: RoundCrashEvent) => {
-      g().onGameCrash(e.crashPoint);
-      g().setPlayers(normalizePlayersCount(e.players));
-      g().setLivePlayers(normalizeLivePlayers(e.players));
+      const nextLivePlayers = normalizeLivePlayers(e.players);
+      const prevLivePlayers = g().livePlayers;
+
+      useGameStore.setState({
+        phase: "crashed",
+        crashPoint: e.crashPoint,
+        players: normalizePlayersCount(e.players),
+        livePlayers: areLivePlayersEqual(prevLivePlayers, nextLivePlayers, true)
+          ? prevLivePlayers
+          : nextLivePlayers,
+      });
       void queryClient.invalidateQueries({ queryKey: gameKeys.recent() });
     };
 

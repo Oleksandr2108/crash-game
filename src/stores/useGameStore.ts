@@ -6,6 +6,31 @@ import type {
   ResentItem,
 } from "../entities/model/types";
 
+const areSameLivePlayer = (a: LivePlayerPayload, b: LivePlayerPayload) => {
+  return (
+    Object.is(a.username, b.username) &&
+    Object.is(a.amount, b.amount) &&
+    Object.is(a.status, b.status) &&
+    Object.is(a.multiplier, b.multiplier)
+  );
+};
+
+const areLivePlayersEqual = (
+  prev: LivePlayerPayload[],
+  next: LivePlayerPayload[],
+) => {
+  if (prev === next) return true;
+  if (prev.length !== next.length) return false;
+
+  for (let i = 0; i < prev.length; i += 1) {
+    if (!areSameLivePlayer(prev[i], next[i])) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export type ConnectionStatus = "connected" | "disconnected" | "error";
 
 interface GameState {
@@ -98,5 +123,12 @@ export const useGameStore = create<GameState>((set) => ({
   setCrashPoint: (crashPoint) => set({ crashPoint }),
   setMyBet: (myBet) => set({ myBet }),
   setPlayers: (players) => set({ players }),
-  setLivePlayers: (livePlayers) => set({ livePlayers }),
+  setLivePlayers: (livePlayers) =>
+    set((state) => {
+      if (areLivePlayersEqual(state.livePlayers, livePlayers)) {
+        return state;
+      }
+
+      return { livePlayers };
+    }),
 }));
