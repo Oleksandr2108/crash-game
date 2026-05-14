@@ -53,6 +53,7 @@ const BetControlsContent = memo(() => {
       <ActionSection
         actionText={actionText}
         onActionClick={canCashout ? handleCashout : handlePlaceBet}
+        canCashout={canCashout}
         actionDisabled={actionDisabled}
         shouldShowCrashedState={shouldShowCrashedState}
         shouldWaitForNextRound={shouldWaitForNextRound}

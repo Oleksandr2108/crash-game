@@ -38,17 +38,17 @@ const BetAmountSection = ({
         <BoxTag
           text="½"
           onClick={onHalfBet}
-          disabled={betAmount <= 1}
+          disabled={inputDisabled || betAmount <= 1}
         />
         <BoxTag
           text="2x"
           onClick={onDoubleBet}
-          disabled={betAmount >= balance}
+          disabled={inputDisabled || betAmount >= balance}
         />
         <BoxTag
           text="Max"
           onClick={onMaxBet}
-          disabled={betAmount >= balance}
+          disabled={inputDisabled || betAmount >= balance}
         />
       </div>
     </>

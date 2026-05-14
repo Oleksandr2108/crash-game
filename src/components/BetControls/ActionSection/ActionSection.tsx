@@ -1,13 +1,16 @@
 import { memo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import Button from "../../../shared/ui/Button";
 import type { Phase } from "../../../types/Events";
 import IconBalance from "../../../assets/icons/IconBalance.svg";
 import IconBonus from "../../../assets/icons/IconBonus.svg";
 import { useClaimBonusMutation } from "../../../entities/queries/useClaimBonusMutation";
+import { useGameStore } from "../../../stores/useGameStore";
 
 interface ActionSectionProps {
   actionText: string;
   onActionClick: () => void;
+  canCashout: boolean;
   actionDisabled: boolean;
   shouldShowCrashedState: boolean;
   shouldWaitForNextRound: boolean;
@@ -21,6 +24,7 @@ interface ActionSectionProps {
 const ActionSection = ({
   actionText,
   onActionClick,
+  canCashout,
   actionDisabled,
   shouldShowCrashedState,
   shouldWaitForNextRound,
@@ -48,10 +52,13 @@ const ActionSection = ({
       <span>Claim Bonus +100</span>
     </span>
   );
+
+  const actionButtonText = canCashout ? <LiveCashoutLabel /> : actionText;
+
   return (
     <>
       <Button
-        text={actionText}
+        text={actionButtonText}
         onClick={onActionClick}
         disabled={actionDisabled}
         className={
@@ -97,5 +104,17 @@ const ActionSection = ({
     </>
   );
 };
+
+const LiveCashoutLabel = memo(() => {
+  const { amount, multiplier } = useGameStore(
+    useShallow((s) => ({
+      amount: s.myBet?.status === "placed" ? s.myBet.amount : 0,
+      multiplier: s.multiplier,
+    })),
+  );
+
+  const profit = Math.max(0, amount * multiplier - amount);
+  return <>Cashout - {profit.toFixed(2)}</>;
+});
 
 export default memo(ActionSection);

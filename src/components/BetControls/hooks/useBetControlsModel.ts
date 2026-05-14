@@ -49,7 +49,6 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     setAutoCashout,
     myBet,
     phase,
-    liveCashoutProfit,
   } = useGameStore(
     useShallow((s) => ({
       betActionInFlight: s.betActionInFlight,
@@ -65,10 +64,6 @@ export function useBetControlsModel(): UseBetControlsModelResult {
       setAutoCashout: s.setAutoCashout,
       myBet: s.myBet,
       phase: s.phase,
-      liveCashoutProfit:
-        s.phase === "running" && s.myBet?.status === "placed"
-          ? Math.max(0, s.myBet.amount * s.multiplier - s.myBet.amount)
-          : 0,
     })),
   );
   const apiKey = useAuthStore((s) => s.apiKey);
@@ -83,7 +78,6 @@ export function useBetControlsModel(): UseBetControlsModelResult {
   const canPlaceBet = phase === "waiting" && !hasActiveBet;
   const canCashout = phase === "running" && hasActiveBet;
   const hasCashedOutThisRound = cashedOutProfit != null;
-  const cashoutProfit = liveCashoutProfit;
 
   const handleBetChange = useCallback(
     (value: number) => {
@@ -197,7 +191,7 @@ export function useBetControlsModel(): UseBetControlsModelResult {
       : shouldWaitForNextRound
         ? "Wait for next round"
         : canCashout
-          ? `Cashout - ${cashoutProfit.toFixed(2)}`
+          ? "Cashout"
           : hasActiveBet
             ? "Bet Placed"
             : "Place Bet";

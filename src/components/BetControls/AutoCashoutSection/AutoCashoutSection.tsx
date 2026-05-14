@@ -26,10 +26,11 @@ const AutoCashoutSection = ({
           type="button"
           role="switch"
           aria-checked={isAutoCashout}
-          onClick={onToggle}
+          onClick={inputDisabled ? undefined : onToggle}
+          disabled={inputDisabled}
           className={`relative inline-flex h-6 w-12 items-center rounded-full border border-(--border) transition-colors duration-300 ${
             isAutoCashout ? "bg-(--colorBtnCashOut)" : "bg-(--colorBgInput)"
-          }`}
+          } ${inputDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         >
           <span
             className={`inline-block h-5 w-5 transform rounded-full bg-(--whiteText) transition-transform duration-300 ${
