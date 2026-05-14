@@ -9,7 +9,7 @@ type LivePlayerRowProps = {
 };
 
 const LivePlayerRow = ({ player, phase }: LivePlayerRowProps) => {
-  const badge = resultBadge(player.status, player.multiplier, phase);
+  const badge = resultBadge(player.status, player.multiplier, phase, player.amount);
 
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-[#111a2c] bg-[#0f1728] px-3 py-3">
