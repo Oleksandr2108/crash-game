@@ -9,7 +9,12 @@ type LivePlayerRowProps = {
 };
 
 const LivePlayerRow = ({ player, phase }: LivePlayerRowProps) => {
-  const badge = resultBadge(player.status, player.multiplier, phase, player.amount);
+  const badge = resultBadge(
+    player.status,
+    player.multiplier,
+    phase,
+    player.amount,
+  );
 
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-[#111a2c] bg-[#0f1728] px-3 py-3">
@@ -20,9 +25,7 @@ const LivePlayerRow = ({ player, phase }: LivePlayerRowProps) => {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[14px] leading-[1.1] text-(--whiteText)">
-          {player.name}
-        </p>
+        <p className="truncate text-[14px] text-(--whiteText)">{player.name}</p>
         <p className="text-[12px] uppercase text-(--text)">
           {player.amount} USD
         </p>

@@ -3,7 +3,7 @@ import { STORAGE_KEY } from "../shared/lib/config";
 
 interface AuthState {
   apiKey: string | null;
-  setApiKey: (key: string) => void;
+  setApiKey: (key: string, persist?: boolean) => void;
   logout: () => void;
 }
 
@@ -16,9 +16,13 @@ const initial = (() => {
 
 export const useAuthStore = create<AuthState>((set) => ({
   apiKey: initial,
-  setApiKey: (key) => {
+  setApiKey: (key, persist = false) => {
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, key);
+      if (persist) {
+        localStorage.setItem(STORAGE_KEY, key);
+      } else {
+        sessionStorage.setItem(STORAGE_KEY, key);
+      }
     }
     set({ apiKey: key });
   },

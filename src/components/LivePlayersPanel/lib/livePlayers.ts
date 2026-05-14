@@ -48,10 +48,10 @@ export const resultBadge = (
   amount: number,
 ): ResultBadge => {
   if (phase !== "crashed") {
-    if (amount === 0) {
-      return { text: "Waiting", className: "text-(--yellowColor)" };
+    if (amount > 0) {
+      return { text: "Bet", className: "text-(--yellowColor)" };
     }
-    return { text: "Bet", className: "text-(--yellowColor)" };
+    return { text: "Waiting", className: "text-(--text)" };
   }
 
   if (status.includes("lost")) {
@@ -69,5 +69,5 @@ export const resultBadge = (
     };
   }
 
-  return { text: "Waiting", className: "text-(--yellowColor)" };
+  return { text: "Bet", className: "text-(--yellowColor)" };
 };
