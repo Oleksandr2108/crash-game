@@ -1,8 +1,10 @@
+import { memo } from "react";
+
 interface TickChartBackgroundProps {
   isCrashed: boolean;
 }
 
-const TickChartBackground = ({ isCrashed }: TickChartBackgroundProps) => {
+const TickChartBackground = memo(({ isCrashed }: TickChartBackgroundProps) => {
   return (
     <div
       className={`absolute inset-0 ${
@@ -12,6 +14,6 @@ const TickChartBackground = ({ isCrashed }: TickChartBackgroundProps) => {
       }`}
     />
   );
-};
+});
 
 export default TickChartBackground;

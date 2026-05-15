@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 import {
   playChartLoop,
   playCrashSound,
@@ -8,51 +9,33 @@ import { useGameStore } from "../../stores/useGameStore";
 
 export const MAX_POINTS = 240;
 
-export const useTickChartState = () => {
+export const useTickChartState = (
+  pointsRef: React.MutableRefObject<number[]>,
+) => {
   const lastRoundIdRef = useRef<string | null>(null);
   const lastPhaseRef = useRef<string | null>(null);
 
-  const roundId = useGameStore((s) => s.roundId);
-  const phase = useGameStore((s) => s.phase);
-  const multiplier = useGameStore((s) => s.multiplier);
-  const crashPoint = useGameStore((s) => s.crashPoint);
-  const endsAt = useGameStore((s) => s.endsAt);
-
-  const [points, setPoints] = useState<number[]>([1]);
-  const [nowMs, setNowMs] = useState(() => Date.now());
+  // Only subscribe to rarely-changing values — avoids per-frame rerenders
+  const { roundId, phase } = useGameStore(
+    useShallow((s) => ({
+      roundId: s.roundId,
+      phase: s.phase,
+    })),
+  );
 
   const isCrashed = phase === "crashed";
   const isWaiting = phase === "waiting";
-  const currentValue =
-    isCrashed && crashPoint != null ? crashPoint : multiplier;
 
-  const remainingSeconds = useMemo(() => {
-    if (!isWaiting || !endsAt) return null;
-    const diffMs = endsAt.getTime() - nowMs;
-    return Math.max(0, diffMs / 1000);
-  }, [isWaiting, endsAt, nowMs]);
-
-  const maxY = useMemo(() => {
-    const top = points.reduce((acc, p) => (p > acc ? p : acc), 1);
-    return Math.max(2, top * 1.15);
-  }, [points]);
-
+  // Reset points on new round
   useEffect(() => {
     if (!roundId) return;
     if (roundId !== lastRoundIdRef.current) {
       lastRoundIdRef.current = roundId;
-      setPoints([1]);
+      pointsRef.current = [1];
     }
-  }, [roundId]);
+  }, [roundId, pointsRef]);
 
-  useEffect(() => {
-    if (!isWaiting || !endsAt) return;
-    const timer = window.setInterval(() => {
-      setNowMs(Date.now());
-    }, 100);
-    return () => window.clearInterval(timer);
-  }, [isWaiting, endsAt]);
-
+  // Sound effects on phase transitions
   useEffect(() => {
     const prevPhase = lastPhaseRef.current;
 
@@ -77,55 +60,53 @@ export const useTickChartState = () => {
     };
   }, []);
 
+  // Accumulate points via continuous RAF — reads multiplier via getState(),
+  // never causes a React rerender
   useEffect(() => {
     if (phase !== "running") return;
 
-    const frame = requestAnimationFrame(() => {
-      setPoints((prev) => {
-        const last = prev[prev.length - 1];
-        if (typeof last === "number" && Math.abs(last - multiplier) < 0.0001) {
-          return prev;
-        }
+    let frameId: number;
 
+    const tick = () => {
+      const multiplier = useGameStore.getState().multiplier;
+      const prev = pointsRef.current;
+      const last = prev[prev.length - 1];
+
+      if (!(typeof last === "number" && Math.abs(last - multiplier) < 0.0001)) {
         const next = [...prev, multiplier];
-        if (next.length > MAX_POINTS) {
-          return next.slice(next.length - MAX_POINTS);
-        }
-        return next;
-      });
-    });
+        pointsRef.current =
+          next.length > MAX_POINTS
+            ? next.slice(next.length - MAX_POINTS)
+            : next;
+      }
 
-    return () => cancelAnimationFrame(frame);
-  }, [phase, multiplier]);
+      frameId = requestAnimationFrame(tick);
+    };
 
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [phase, pointsRef]);
+
+  // Add final crash point once when phase becomes "crashed"
   useEffect(() => {
-    if (phase !== "crashed" || crashPoint == null) return;
+    if (phase !== "crashed") return;
 
     const frame = requestAnimationFrame(() => {
-      setPoints((prev) => {
-        const last = prev[prev.length - 1];
-        if (typeof last === "number" && Math.abs(last - crashPoint) < 0.0001) {
-          return prev;
-        }
+      const crashPoint = useGameStore.getState().crashPoint;
+      if (crashPoint == null) return;
 
-        const next = [...prev, crashPoint];
-        if (next.length > MAX_POINTS) {
-          return next.slice(next.length - MAX_POINTS);
-        }
-        return next;
-      });
+      const prev = pointsRef.current;
+      const last = prev[prev.length - 1];
+      if (typeof last === "number" && Math.abs(last - crashPoint) < 0.0001)
+        return;
+
+      const next = [...prev, crashPoint];
+      pointsRef.current =
+        next.length > MAX_POINTS ? next.slice(next.length - MAX_POINTS) : next;
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [phase, crashPoint]);
+  }, [phase, pointsRef]);
 
-  return {
-    phase,
-    points,
-    maxY,
-    isCrashed,
-    isWaiting,
-    currentValue,
-    remainingSeconds,
-  };
+  return { phase, isCrashed, isWaiting };
 };

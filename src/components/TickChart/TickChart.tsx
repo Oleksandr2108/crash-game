@@ -1,28 +1,21 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import TickChartBackground from "./TickChartBackground";
 import TickChartCenterValue from "./TickChartCenterValue";
 import TickChartStatusBadge from "./TickChartStatusBadge";
 import { useTickChartCanvas } from "./useTickChartCanvas";
 import { useTickChartState } from "./useTickChartState";
 
-const TickChart = () => {
+const TickChart = memo(() => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const {
-    phase,
-    points,
-    maxY,
-    isCrashed,
-    isWaiting,
-    currentValue,
-    remainingSeconds,
-  } = useTickChartState();
+  const pointsRef = useRef<number[]>([1]);
+
+  const { phase, isCrashed, isWaiting } = useTickChartState(pointsRef);
 
   useTickChartCanvas({
     canvasRef,
     wrapperRef,
-    points,
-    maxY,
+    pointsRef,
     isCrashed,
   });
 
@@ -36,8 +29,6 @@ const TickChart = () => {
       <TickChartCenterValue
         isWaiting={isWaiting}
         isCrashed={isCrashed}
-        remainingSeconds={remainingSeconds}
-        currentValue={currentValue}
       />
 
       <canvas
@@ -46,6 +37,6 @@ const TickChart = () => {
       />
     </div>
   );
-};
+});
 
 export default TickChart;
