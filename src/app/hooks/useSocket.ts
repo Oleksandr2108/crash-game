@@ -127,8 +127,6 @@ export function useSocket() {
       g().setBetActionInFlight(false);
     };
 
-    g().setConnectionStatus("connected");
-
     const onConnect = () => g().setConnectionStatus("connected");
     const onDisconnect = () => g().setConnectionStatus("disconnected");
     const onConnectError = (err: Error) => {
@@ -192,12 +190,16 @@ export function useSocket() {
     };
 
     const onCrash = (e: RoundCrashEvent) => {
+      const cur = g().roundId;
+      if (cur && e.roundId !== cur) return;
+
       const nextLivePlayers = normalizeLivePlayers(e.players);
       const prevLivePlayers = g().livePlayers;
 
       useGameStore.setState({
         phase: "crashed",
         crashPoint: e.crashPoint,
+        multiplier: e.crashPoint,
         players: normalizePlayersCount(e.players),
         livePlayers: areLivePlayersEqual(prevLivePlayers, nextLivePlayers, true)
           ? prevLivePlayers
