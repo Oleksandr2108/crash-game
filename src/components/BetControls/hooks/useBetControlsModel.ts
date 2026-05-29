@@ -3,9 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useBalanceQuery } from "../../../entities/queries/useBalanceQuery";
 import { getSocket } from "../../../shared/api/socket";
 import { playBetSound } from "../../../shared/lib/gameSounds";
-import { useAuthStore } from "../../../stores/useAuthStore";
 import { useGameStore } from "../../../stores/useGameStore";
-import { useBetControlsSocket } from "./useBetControlsSocket";
 import type { Phase } from "../../../types/Events";
 
 export interface UseBetControlsModelResult {
@@ -40,6 +38,9 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     setBetAmount,
     betActionInFlight,
     setBetActionInFlight,
+    betError,
+    setBetError,
+    betOutcome,
     balance,
     setBalance,
     halfBet,
@@ -53,6 +54,9 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     useShallow((s) => ({
       betActionInFlight: s.betActionInFlight,
       setBetActionInFlight: s.setBetActionInFlight,
+      betError: s.betError,
+      setBetError: s.setBetError,
+      betOutcome: s.betOutcome,
       balance: s.balance,
       setBalance: s.setBalance,
       halfBet: s.halfBet,
@@ -66,17 +70,17 @@ export function useBetControlsModel(): UseBetControlsModelResult {
       phase: s.phase,
     })),
   );
-  const apiKey = useAuthStore((s) => s.apiKey);
 
-  const [actionError, setActionError] = useState<string | null>(null);
   const [autoCashoutInput, setAutoCashoutInput] = useState<number>(2);
-  const [cashedOutProfit, setCashedOutProfit] = useState<number | null>(null);
-  const [lostAtMultiplier, setLostAtMultiplier] = useState<number | null>(null);
 
   const isAutoCashout = autoCashout != null;
   const hasActiveBet = myBet?.status === "placed";
   const canPlaceBet = phase === "waiting" && !hasActiveBet;
   const canCashout = phase === "running" && hasActiveBet;
+  const cashedOutProfit =
+    betOutcome?.type === "cashedOut" ? betOutcome.profit : null;
+  const lostAtMultiplier =
+    betOutcome?.type === "lost" ? betOutcome.crashPoint : null;
   const hasCashedOutThisRound = cashedOutProfit != null;
 
   const handleBetChange = useCallback(
@@ -111,39 +115,14 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     }
   }, [balanceData, setBalance]);
 
-  useBetControlsSocket({
-    apiKey,
-    onBetRejected: (message: string) => {
-      setActionError(message);
-    },
-    onBetPlaced: () => {
-      setCashedOutProfit(null);
-      setLostAtMultiplier(null);
-    },
-    onBetCashedOut: (profit: number) => {
-      setCashedOutProfit(Math.max(0, profit));
-      setLostAtMultiplier(null);
-      setActionError(null);
-    },
-    onBetLost: (crashPoint: number) => {
-      setLostAtMultiplier(Math.max(0, crashPoint));
-      setCashedOutProfit(null);
-      setActionError(null);
-    },
-    onRoundWaiting: () => {
-      setCashedOutProfit(null);
-      setLostAtMultiplier(null);
-    },
-  });
-
   const handlePlaceBet = useCallback(() => {
     if (!canPlaceBet || betAmount <= 0 || betAmount > balance) return;
     if (isAutoCashout && (autoCashout == null || autoCashout < 1.01)) {
-      setActionError("Auto cash out must be >= 1.01");
+      setBetError("Auto cash out must be >= 1.01");
       return;
     }
 
-    setActionError(null);
+    setBetError(null);
     setBetActionInFlight(true);
     playBetSound();
     try {
@@ -153,7 +132,7 @@ export function useBetControlsModel(): UseBetControlsModelResult {
       });
     } catch {
       setBetActionInFlight(false);
-      setActionError("Failed to place bet");
+      setBetError("Failed to place bet");
     }
   }, [
     autoCashout,
@@ -161,21 +140,22 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     betAmount,
     canPlaceBet,
     isAutoCashout,
+    setBetError,
     setBetActionInFlight,
   ]);
 
   const handleCashout = useCallback(() => {
     if (!canCashout) return;
 
-    setActionError(null);
+    setBetError(null);
     setBetActionInFlight(true);
     try {
       getSocket().emit("bet:cashout", {});
     } catch {
       setBetActionInFlight(false);
-      setActionError("Failed to cash out");
+      setBetError("Failed to cash out");
     }
-  }, [canCashout, setBetActionInFlight]);
+  }, [canCashout, setBetActionInFlight, setBetError]);
 
   const isRunning = phase === "running";
   const hasInvalidBetAmount = betAmount <= 0 || betAmount > balance;
@@ -219,7 +199,7 @@ export function useBetControlsModel(): UseBetControlsModelResult {
     shouldWaitForNextRound,
     isRunningWithMyBet,
     cashedOutProfit,
-    actionError,
+    actionError: betError,
     isBetInputDisabled,
     handlePlaceBet,
     handleCashout,

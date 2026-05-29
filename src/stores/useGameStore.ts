@@ -32,10 +32,15 @@ const areLivePlayersEqual = (
 };
 
 export type ConnectionStatus = "connected" | "disconnected" | "error";
+export type BetOutcome =
+  | { type: "cashedOut"; profit: number }
+  | { type: "lost"; crashPoint: number };
 
 interface GameState {
   betAmount: number;
   betActionInFlight: boolean;
+  betError: string | null;
+  betOutcome: BetOutcome | null;
   balance: number;
   roundId: string | null;
   autoCashout: number | null;
@@ -62,6 +67,8 @@ interface GameState {
   setLivePlayers: (players: LivePlayerPayload[]) => void;
   setBetAmount: (amount: number) => void;
   setBetActionInFlight: (value: boolean) => void;
+  setBetError: (message: string | null) => void;
+  setBetOutcome: (outcome: BetOutcome | null) => void;
   setRoundId: (id: string) => void;
   halfBet: () => void;
   doubleBet: () => void;
@@ -77,6 +84,8 @@ interface GameState {
 export const useGameStore = create<GameState>((set) => ({
   betAmount: 10,
   betActionInFlight: false,
+  betError: null,
+  betOutcome: null,
   balance: 0,
   roundId: null,
   autoCashout: null,
@@ -107,6 +116,8 @@ export const useGameStore = create<GameState>((set) => ({
   setAutoCashout: (amount) => set({ autoCashout: amount }),
   setBetAmount: (amount) => set({ betAmount: amount }),
   setBetActionInFlight: (value) => set({ betActionInFlight: value }),
+  setBetError: (message) => set({ betError: message }),
+  setBetOutcome: (outcome) => set({ betOutcome: outcome }),
   halfBet: () =>
     set((state) => ({ betAmount: Math.floor(state.betAmount / 2) })),
   doubleBet: () => set((state) => ({ betAmount: state.betAmount * 2 })),

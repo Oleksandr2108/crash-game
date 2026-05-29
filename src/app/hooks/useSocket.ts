@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSocket } from "../../shared/api/socket";
+import { playCashoutSound } from "../../shared/lib/gameSounds";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useGameStore } from "../../stores/useGameStore";
 import { gameKeys } from "../../entities/queries/gameKeys";
@@ -127,6 +128,11 @@ export function useSocket() {
       g().setBetActionInFlight(false);
     };
 
+    const clearBetResultState = () => {
+      g().setBetError(null);
+      g().setBetOutcome(null);
+    };
+
     const onConnect = () => g().setConnectionStatus("connected");
     const onDisconnect = () => g().setConnectionStatus("disconnected");
     const onConnectError = (err: Error) => {
@@ -181,6 +187,7 @@ export function useSocket() {
         multiplier: 1,
       });
       clearBetFlightState();
+      clearBetResultState();
     };
 
     const onTick = (e: RoundTickEvent) => {
@@ -217,22 +224,29 @@ export function useSocket() {
         status: "placed",
       });
       clearBetFlightState();
+      clearBetResultState();
     };
 
     const onBetCashedOut = (e: BetCashedOutEvent) => {
+      playCashoutSound();
       g().setBalance(e.balance);
       g().setMyBet(null);
+      g().setBetOutcome({ type: "cashedOut", profit: Math.max(0, e.profit) });
+      g().setBetError(null);
       clearBetFlightState();
     };
 
     const onBetLost = (e: BetLostEvent) => {
       g().setBalance(e.balance);
       g().setMyBet(null);
+      g().setBetOutcome({ type: "lost", crashPoint: Math.max(0, e.crashPoint) });
+      g().setBetError(null);
       clearBetFlightState();
     };
 
     const onBetRejected = (e: BetRejectedEvent) => {
       clearBetFlightState();
+      g().setBetError(e.message || "Action rejected");
       console.warn("Bet rejected:", e.reason, e.message);
     };
 
