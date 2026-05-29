@@ -20,8 +20,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== "undefined") {
       if (persist) {
         localStorage.setItem(STORAGE_KEY, key);
+        sessionStorage.removeItem(STORAGE_KEY);
       } else {
         sessionStorage.setItem(STORAGE_KEY, key);
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
     set({ apiKey: key });
