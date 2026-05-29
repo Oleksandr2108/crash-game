@@ -37,7 +37,7 @@ const ActionSection = ({
   const claimBonusMutation = useClaimBonusMutation();
 
   const handleClaimBonus = () => {
-    // Do not block UI: user can click as many times as they want.
+    if (claimBonusMutation.isPending) return;
     claimBonusMutation.mutate();
   };
 
@@ -84,6 +84,7 @@ const ActionSection = ({
       <Button
         text={buttonText}
         onClick={handleClaimBonus}
+        disabled={claimBonusMutation.isPending}
         className="text-(--whiteText) opacity-[0.73] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] bg-[linear-gradient(90deg,#c084fc_0%,#b884fc_7.14%,#b185fb_14.29%,#a985fb_21.43%,#a185fa_28.57%,#9985fa_35.71%,#9085fa_42.86%,#8885f9_50%,#7f85f9_57.14%,#7585f8_64.29%,#6c84f8_71.43%,#6184f7_78.57%,#5683f7_85.71%,#4a83f6_92.86%,#3b82f6_100%)]"
       />
 
