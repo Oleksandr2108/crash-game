@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { getSocket } from "../api/socket";
+import { useQueryClient } from "@tanstack/react-query";
+import { getSocket } from "../../shared/api/socket";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useGameStore } from "../../stores/useGameStore";
-import { queryClient } from "../../app/providers/queryClient";
 import { gameKeys } from "../../entities/queries/gameKeys";
 import type { LivePlayerPayload } from "../../entities/model/types";
 import type {
@@ -19,6 +19,7 @@ import type {
 
 export function useSocket() {
   const apiKey = useAuthStore((state) => state.apiKey);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!apiKey) return;
@@ -260,5 +261,5 @@ export function useSocket() {
       socket.off("bet:lost", onBetLost);
       socket.off("bet:rejected", onBetRejected);
     };
-  }, [apiKey]);
+  }, [apiKey, queryClient]);
 }

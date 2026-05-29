@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import LoginPage from "./pages/LoginPage";
 import { useAuthStore } from "./stores/useAuthStore";
-import { useSocket } from "./shared/hooks/useSocket";
+import { useSocket } from "./app/hooks/useSocket";
 import GamePage from "./pages/GamePage";
 import Footer from "./components/Footer/Footer";
 import { Toaster } from "sonner";
